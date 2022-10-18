@@ -1,16 +1,16 @@
 package org.example;
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.knowledge.dto.DiagnosisDto;
-import com.knowledge.entity.DiagnosticFactorsEntity;
-import com.knowledge.entity.DifferentialDiagnosisEntity;
-import com.knowledge.entity.InspectEntity;
-import com.knowledge.entity.OperationEntity;
+import com.knowledge.entity.*;
 import com.knowledge.util.FileUtil;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -24,27 +24,32 @@ public class App
 {
 
     public static void main( String[] args ) throws IOException {
-
-        UserEntity userEntity = new UserEntity();
-        int i =2 ;
-        if(i==1){
-            userEntity.setName("张三" + i);
-            userEntity.setAge(20 + i);
-            userEntity.setTime(new Date(System.currentTimeMillis() + i));
-        }else{
-            userEntity.setName("张三" + i);
-            userEntity.setAge(20 + i);
-            userEntity.setTime(new Date(System.currentTimeMillis() + i));
-        }
-        System.out.println(userEntity.toString());
-
+        List<String> lists = new ArrayList<String>();
+        lists.add("a");
+        lists.add("b");
+        lists.add("c");
+        lists.add("d");
+        lists.add("e");
+        System.out.println(lists.subList(0,2).toString());
+        System.out.println(lists.subList(2,lists.size()).toString());
+        System.out.println(lists.size());
+        System.out.println(lists.get(lists.size()-1).toString());
         //System.out.println("Wiskott-Aldrich综合征".toLowerCase()+";"+"Addison病".toLowerCase());
         //System.out.println(Math.max(8,Math.max(7,6)));
+        //importLocalExcel();
         //exportLocalExcel();
         //diagnosisMapProcess();
         //mapOperation();
         //fileList();
         //fileToObject();
+    }
+
+    private static void importLocalExcel() {
+        ImportParams params = new ImportParams();
+        params.setTitleRows(1);
+        params.setHeadRows(1);
+        List<UserEntity> UserEntityList = ExcelImportUtil.importExcel(new File("E:\\医疗\\知识导入\\知识导入任务\\easypoi-user.xls"),UserEntity.class, params);
+        System.out.println(UserEntityList.toString());
     }
 
     private static void exportLocalExcel() throws IOException {
