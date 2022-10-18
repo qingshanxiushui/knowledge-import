@@ -2,14 +2,13 @@ package com.knowledge.Application;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import com.alibaba.fastjson.JSON;
 import com.knowledge.dto.DiagnosisDto;
 import com.knowledge.dto.DiagnosisResultDto;
+import com.knowledge.dto.DifferentialDiagnosisResultDto;
 import com.knowledge.dto.PositiveSymptomReusltDto;
-import com.knowledge.entity.DiagnosticFactorEntity;
-import com.knowledge.entity.DiagnosticFactorsEntity;
-import com.knowledge.entity.OperationEntity;
-import com.knowledge.entity.ScaleEntity;
+import com.knowledge.entity.*;
 import com.knowledge.util.FileUtil;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.example.UserEntity;
@@ -22,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class App {
 
@@ -43,19 +43,30 @@ public class App {
         fileList("E:\\医疗\\知识导入\\知识导入任务\\BMJ\\BMJ-量表","量表");
         //printDiagnosisMap();
         //System.out.println(diagnosisMap.get("阿尔茨海默病"));
+        //鉴别诊断
+        fileList("E:\\医疗\\知识导入\\知识导入任务\\BMJ\\BMJ-鉴别诊断","鉴别诊断");
+        //printDiagnosisMap();
+        //System.out.println(diagnosisMap.get("addison病"));
+        //检查
+        fileList("E:\\医疗\\知识导入\\知识导入任务\\BMJ\\BMJ-检查","检查");
+        //printDiagnosisMap();
+        //System.out.println(diagnosisMap.get("addison病"));
 
-        /*DiagnosisDto diagnosis= diagnosisMap.get("阿尔茨海默病");
+        /*DiagnosisDto diagnosis= diagnosisMap.get("addison病");
+        System.out.println(diagnosis.toString());
         diagnosisFlatMap(diagnosis);
         System.out.println(diagnosisResultList.toString());*/
 
+        //数据处理
+        System.out.println(diagnosisMap.size());
         for(String key:diagnosisMap.keySet()){
             diagnosisFlatMap(diagnosisMap.get(key));
         }
 
         //生成excel文档
-        Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("诊断","临床表现"),
+        Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("诊断","临床表现", ExcelType.XSSF),
                 DiagnosisResultDto.class, diagnosisResultList);
-        FileOutputStream fos = new FileOutputStream("E:\\医疗\\知识导入\\知识导入任务\\diagnosis-export-b.xls");
+        FileOutputStream fos = new FileOutputStream("E:\\医疗\\知识导入\\知识导入任务\\diagnosis-export.xlsx");
         workbook.write(fos);
         fos.close();
     }
@@ -77,31 +88,73 @@ public class App {
                 }
             }
         }
+        //System.out.println(positiveSymptomReusltList.toString());
+
+        //打平鉴别诊断
+        String differentialDiagnosisName;
+        String differentialDiagnosisPerformance;
+        List<DifferentialDiagnosisResultDto> differentialDiagnosisReusltList= new ArrayList<DifferentialDiagnosisResultDto>();
+        if(diagnosis.getDifferentialDiagnosis() !=null && !diagnosis.getDifferentialDiagnosis().isEmpty()){
+            for(DifferentialDiagnosisSubEntity differentialDiagnosisSubEntity:diagnosis.getDifferentialDiagnosis()){
+                differentialDiagnosisName = differentialDiagnosisSubEntity.get疾病();
+                if(differentialDiagnosisSubEntity.get症状()!=null && !differentialDiagnosisSubEntity.get症状().isEmpty()){
+                    for(String performance:differentialDiagnosisSubEntity.get症状()){
+                        differentialDiagnosisPerformance = performance;
+                        DifferentialDiagnosisResultDto differentialDiagnosisResult = new DifferentialDiagnosisResultDto(differentialDiagnosisName,differentialDiagnosisPerformance);
+                        differentialDiagnosisReusltList.add(differentialDiagnosisResult);
+                    }
+                }
+            }
+        }
+        //System.out.println(differentialDiagnosisReusltList.toString());
+
+        //打平检查
+        List<InspectSubItemEntity> positiveInspectResultList = null;
+        if( diagnosis.getPositiveInspect()!=null && !diagnosis.getPositiveInspect().isEmpty()){
+            positiveInspectResultList = diagnosis.getPositiveInspect().stream().flatMap(inspectSubEntity -> inspectSubEntity.getItems().stream()).collect(Collectors.toList());
+        }
+        //System.out.println(positiveInspectResultList);
 
         //构建输出结果
         int operationSize = (diagnosis.getOperationsName() == null || diagnosis.getOperationsName().isEmpty())?0: diagnosis.getOperationsName().size();
-        int scaleSize= (diagnosis.getScaleContent() == null || diagnosis.getScaleContent().isEmpty())?0: diagnosis.getScaleContent().size();
-        int positiveSymptomSize= (positiveSymptomReusltList == null || positiveSymptomReusltList.isEmpty())?0:positiveSymptomReusltList.size();
+        int scaleSize = (diagnosis.getScaleContent() == null || diagnosis.getScaleContent().isEmpty())?0: diagnosis.getScaleContent().size();
+        int positiveSymptomSize = (positiveSymptomReusltList.isEmpty())?0:positiveSymptomReusltList.size();
+        int differentialDiagnosisSize = (differentialDiagnosisReusltList.isEmpty())?0:differentialDiagnosisReusltList.size();
+        int positiveInspectSize = (positiveInspectResultList ==null || positiveInspectResultList.isEmpty())?0:positiveInspectResultList.size();
+        int maxSize = Math.max(Math.max(Math.max(Math.max(operationSize,scaleSize),positiveSymptomSize),differentialDiagnosisSize),positiveInspectSize);
 
         int serialNo = 0;
-        for(serialNo =0;serialNo < Math.max(operationSize,Math.max(scaleSize,positiveSymptomSize)); serialNo++){
+        for(serialNo =0;serialNo < maxSize; serialNo++){
             DiagnosisResultDto diagnosisResultDto = new DiagnosisResultDto();
-            if(serialNo==0){
+            if(serialNo==0){  //首记录设置序号1
                 serialNoExcel = serialNoExcel+1;
                 diagnosisResultDto.setTermName(diagnosis.getTermName());
                 diagnosisResultDto.setSerialNo(String.valueOf(serialNoExcel));
             }
-            if(serialNo<operationSize){
+            if(serialNo<operationSize){ //手术
                 diagnosisResultDto.setAssociatedSurgeryName(diagnosis.getOperationsName().get(serialNo));
+                diagnosisResultDto.setAssociatedSurgerySource("BMJ");
             }
-            if(serialNo<scaleSize){
+            if(serialNo<scaleSize){ //量表
                 diagnosisResultDto.setAssessmentScaleName(diagnosis.getScaleContent().get(serialNo).getName());
                 diagnosisResultDto.setAssessmentScaleContent(diagnosis.getScaleContent().get(serialNo).getContent());
+                diagnosisResultDto.setAssessmentScaleSource("BMJ");
             }
-            if(serialNo<positiveSymptomSize){
+            if(serialNo<positiveSymptomSize){ //阳性症状
                 diagnosisResultDto.setPositiveSymptomName(positiveSymptomReusltList.get(serialNo).getName());
                 diagnosisResultDto.setPositiveSymptomContent(positiveSymptomReusltList.get(serialNo).getDesc());
                 diagnosisResultDto.setPositiveSymptomSource("BMJ");
+            }
+            if(serialNo<differentialDiagnosisSize){ //诊断鉴别
+                diagnosisResultDto.setIdentifyDisease(differentialDiagnosisReusltList.get(serialNo).getName());
+                diagnosisResultDto.setIdentifySymptom(differentialDiagnosisReusltList.get(serialNo).getPerformance());
+                diagnosisResultDto.setIdentifySource("BMJ");
+            }
+            if(serialNo<positiveInspectSize){ //阳性检查
+                diagnosisResultDto.setPositiveInspectAName(positiveInspectResultList.get(serialNo).getTitle());
+                diagnosisResultDto.setPositiveInspectAResult(positiveInspectResultList.get(serialNo).getResult());
+                diagnosisResultDto.setPositiveInspectAContent(positiveInspectResultList.get(serialNo).getDesc());
+                diagnosisResultDto.setPositiveInspectASource("BMJ");
             }
             diagnosisResultList.add(diagnosisResultDto);
         }
@@ -141,6 +194,12 @@ public class App {
                         case "量表":
                             scaleProcess(jsonStr);
                             break;
+                        case "鉴别诊断":
+                            differentialDiagnosisProcess(jsonStr);
+                            break;
+                        case "检查":
+                            positiveInspectProcess(jsonStr);
+                            break;
                         default:
                             System.out.println("default");
                     }
@@ -150,22 +209,61 @@ public class App {
         }
     }
 
+    private static void positiveInspectProcess(String jsonStr) {
+        InspectEntity inspect = JSON.parseObject(jsonStr,  InspectEntity.class);
+        if(inspect.get检查()!=null && !inspect.get检查().isEmpty()){
+            String disease = inspect.getName().toLowerCase();
+            DiagnosisDto diagnosis= diagnosisMap.get(disease);
+            if(diagnosis!=null){ //不为空
+                diagnosis.setPositiveInspect(inspect.get检查());
+                diagnosisMap.put(diagnosis.getTermName(),diagnosis);
+            }
+            /*else{ //null
+                DiagnosisDto diagnosisNew = new DiagnosisDto();
+                diagnosisNew.setTermName(disease);
+                diagnosisNew.setPositiveInspect(inspect.get检查());
+                diagnosisMap.put(diagnosisNew.getTermName(),diagnosisNew);
+            }*/
+        }
+    }
+
+    private static void differentialDiagnosisProcess(String jsonStr) {
+        DifferentialDiagnosisEntity differentialDiagnosis = JSON.parseObject(jsonStr,  DifferentialDiagnosisEntity.class);
+        if(differentialDiagnosis.get鉴别诊断()!=null && !differentialDiagnosis.get鉴别诊断().isEmpty()){
+            String disease = differentialDiagnosis.getName().toLowerCase();
+            DiagnosisDto diagnosis= diagnosisMap.get(disease);
+            if(diagnosis!=null){ //不为空
+                diagnosis.setDifferentialDiagnosis(differentialDiagnosis.get鉴别诊断());
+                diagnosisMap.put(diagnosis.getTermName(),diagnosis);
+            }
+            /*else{ //null
+                DiagnosisDto diagnosisNew = new DiagnosisDto();
+                diagnosisNew.setTermName(disease);
+                diagnosisNew.setDifferentialDiagnosis(differentialDiagnosis.get鉴别诊断());
+                diagnosisMap.put(diagnosisNew.getTermName(),diagnosisNew);
+            }*/
+        }
+    }
+
     private static void diagnosticProcess(String jsonStr) {
         //System.out.println(jsonStr);
         DiagnosticFactorsEntity diagnosic = JSON.parseObject(jsonStr,  DiagnosticFactorsEntity.class);
-        DiagnosisDto diagnosis= diagnosisMap.get(diagnosic.getDisease());
+        String disease = diagnosic.getDisease();
+        if(diagnosic.getDisease().indexOf(":")>0){
+            disease = diagnosic.getDisease().substring(0,diagnosic.getDisease().indexOf(":"));
+        }
+        DiagnosisDto diagnosis= diagnosisMap.get(disease);
         if(diagnosis!=null) { //不为空
             diagnosis.setPositiveSymptoms(diagnosic.getFactor());
             diagnosisMap.put(diagnosis.getTermName(),diagnosis);
         }else{ //null
             DiagnosisDto diagnosisNew = new DiagnosisDto();
-            diagnosisNew.setTermName(diagnosic.getDisease());
+            diagnosisNew.setTermName(disease);
             diagnosisNew.setPositiveSymptoms(diagnosic.getFactor());
             diagnosisMap.put(diagnosisNew.getTermName(),diagnosisNew);
         }
     }
     private static void operationProcess(String jsonStr) {
-        //System.out.println(jsonStr);
         OperationEntity operation = JSON.parseObject(jsonStr,  OperationEntity.class);
         DiagnosisDto diagnosis= diagnosisMap.get(operation.getDisease());
         if(diagnosis!=null) { //不为空
@@ -179,7 +277,6 @@ public class App {
         }
     }
     private static void scaleProcess(String jsonStr) {
-        //System.out.println(jsonStr);
         ScaleEntity scale = JSON.parseObject(jsonStr,  ScaleEntity.class);
         DiagnosisDto diagnosis= diagnosisMap.get(scale.getDisease());
         if(diagnosis!=null) { //不为空

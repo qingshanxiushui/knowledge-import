@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PositiveSymptomReusltDto { //阳性症状
+public class DifferentialDiagnosisResultDto { //鉴别诊断
     private String name; //名称
-    private String desc; //内容
+    private String performance; //内容
 }

@@ -2,8 +2,11 @@ package org.example;
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.knowledge.dto.DiagnosisDto;
 import com.knowledge.entity.DiagnosticFactorsEntity;
+import com.knowledge.entity.DifferentialDiagnosisEntity;
+import com.knowledge.entity.InspectEntity;
 import com.knowledge.entity.OperationEntity;
 import com.knowledge.util.FileUtil;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -11,6 +14,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Hello world!
@@ -21,7 +25,21 @@ public class App
 
     public static void main( String[] args ) throws IOException {
 
-        System.out.println(Math.max(8,Math.max(7,6)));
+        UserEntity userEntity = new UserEntity();
+        int i =2 ;
+        if(i==1){
+            userEntity.setName("张三" + i);
+            userEntity.setAge(20 + i);
+            userEntity.setTime(new Date(System.currentTimeMillis() + i));
+        }else{
+            userEntity.setName("张三" + i);
+            userEntity.setAge(20 + i);
+            userEntity.setTime(new Date(System.currentTimeMillis() + i));
+        }
+        System.out.println(userEntity.toString());
+
+        //System.out.println("Wiskott-Aldrich综合征".toLowerCase()+";"+"Addison病".toLowerCase());
+        //System.out.println(Math.max(8,Math.max(7,6)));
         //exportLocalExcel();
         //diagnosisMapProcess();
         //mapOperation();
@@ -130,6 +148,7 @@ public class App
         System.out.println( "----------------读取量表文件结束----------------" );*/
 
         //读取诊断因素文件
+        //String diagnosisFile = FileUtil.readJsonFile("E:\\医疗\\知识导入\\知识导入任务\\BMJ\\BMJ-诊断因素\\肺栓塞\\肺栓塞.txt");
         /*String diagnosisFile = FileUtil.readJsonFile("E:\\医疗\\知识导入\\知识导入任务\\BMJ\\BMJ-诊断因素\\（血液）高凝状态\\（血液）高凝状态.txt");
         System.out.println(diagnosisFile);
         JSONObject diagnosisObj=JSON.parseObject(diagnosisFile);
@@ -140,9 +159,37 @@ public class App
         DiagnosticFactorsEntity diagnosis = JSON.parseObject(diagnosisFile,  DiagnosticFactorsEntity.class);
         System.out.println(diagnosis.toString());
         System.out.println(diagnosis.getDisease());
+        String disease = diagnosis.getDisease();
+        if(diagnosis.getDisease().indexOf(":")>0){
+            disease = diagnosis.getDisease().substring(0,diagnosis.getDisease().indexOf(":"));
+        }
+        System.out.println("疾病截取后："+disease);
         System.out.println(diagnosis.getSymptom_annotate_list().get(1));
         System.out.println(diagnosis.getFactor().get(1));
         System.out.println(diagnosis.getFactor().get(1).getDesc());
         System.out.println( "----------------读取诊断因素文件结束----------------" );*/
+
+        //读取鉴别诊断文件
+        /*String differentialDiagnosisFile = FileUtil.readJsonFile("E:\\医疗\\知识导入\\知识导入任务\\BMJ\\BMJ-鉴别诊断\\Addison病.txt");
+        System.out.println( "----------------读取鉴别诊断文件开始----------------" );
+        DifferentialDiagnosisEntity differentialDiagnosis = JSON.parseObject(differentialDiagnosisFile,  DifferentialDiagnosisEntity.class);
+        System.out.println(differentialDiagnosis.toString());
+        System.out.println(differentialDiagnosis.getName());
+        System.out.println(differentialDiagnosis.get鉴别诊断().get(1).get疾病());
+        System.out.println(differentialDiagnosis.get鉴别诊断().get(0).get症状().get(1));
+        System.out.println( "----------------读取鉴别诊断文件结束----------------" );*/
+
+        //读取检查文件
+        /*String inspectFile = FileUtil.readJsonFile("E:\\医疗\\知识导入\\知识导入任务\\BMJ\\BMJ-检查\\Addison病.txt");
+        System.out.println( "----------------读取检查文件开始----------------" );
+        InspectEntity inspect = JSON.parseObject(inspectFile,  InspectEntity.class);
+        System.out.println(inspect.toString());
+        System.out.println(inspect.getName());
+        System.out.println(inspect.getName().toLowerCase());
+        System.out.println(inspect.get检查().get(0).getItems().get(0));
+        System.out.println(inspect.get检查().get(1).getItems().get(1));
+        System.out.println(inspect.get检查().stream().flatMap(inspectSubEntity -> inspectSubEntity.getItems().stream()).collect(Collectors.toList()).get(5));
+        System.out.println( "----------------读取检查文件结束----------------" );*/
+
     }
 }
