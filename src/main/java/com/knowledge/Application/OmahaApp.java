@@ -6,12 +6,10 @@ import cn.afterturn.easypoi.excel.entity.ExportParams;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.afterturn.easypoi.handler.inter.IExcelExportServer;
-import com.knowledge.dto.DiagnosisDto;
 import com.knowledge.dto.DiagnosisResultDto;
 import com.knowledge.dto.OmahaDto;
 import com.knowledge.entity.OmahaEntity;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,39 +21,32 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OmahaApp {
-    public static HashMap<String, OmahaDto> diagnosisMap = new HashMap<String, OmahaDto>();
-    public static List<DiagnosisResultDto> diagnosisResultList = new ArrayList<DiagnosisResultDto>();
-    public static int serialNoExcel = 0;
+    public static HashMap<String, OmahaDto> omahaDtoHashMap = new HashMap<String, OmahaDto>();
+    public static List<DiagnosisResultDto> omahaDiagnosisResultList = new ArrayList<DiagnosisResultDto>();
+    public static int omahaSerialNoExcel = 0;
     public static void main( String[] args ) throws IOException {
 
 
         //读取文档获取数据
-        List<OmahaEntity> omahaEntitySubList = readLocalFile();
+        //List<OmahaEntity> omahaEntitySubList = readLocalFile();
+        List<OmahaEntity> omahaEntitySubList = readLocalFileDirectSub();
         //List<OmahaEntity> omahaEntitySubList = mockData();
 
         omahaProcess(omahaEntitySubList);
         //printDiagnosisMap();
 
-        System.out.println(diagnosisMap.size());
-        for(String key:diagnosisMap.keySet()){
-            omahaFlatMap(diagnosisMap.get(key));
+        System.out.println(omahaDtoHashMap.size());
+        for(String key: omahaDtoHashMap.keySet()){
+            omahaFlatMap(omahaDtoHashMap.get(key));
         }
 
-        System.out.println(diagnosisResultList.size());
+        System.out.println(omahaDiagnosisResultList.size());
 
-        /*Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("诊断","临床表现"),
-                DiagnosisResultDto.class, diagnosisResultList.subList(0,50000));
-        FileOutputStream fos = new FileOutputStream("E:\\医疗\\知识导入\\知识导入任务\\omaha-export-a.xls");
-        workbook.write(fos);
-        fos.close();*/
+        exportLocalExcel();
+    }
 
-        /*Workbook workbookA = ExcelExportUtil.exportExcel(new ExportParams("诊断","临床表现"),
-                DiagnosisResultDto.class, diagnosisResultList.subList(49995,diagnosisResultList.size()));
-        FileOutputStream fosA = new FileOutputStream("E:\\医疗\\知识导入\\知识导入任务\\omaha-export-b.xls");
-        workbookA.write(fosA);
-        fosA.close();*/
-
-        int totalPage = (diagnosisResultList.size() / 10000) + 1;
+    private static void exportLocalExcel() throws IOException {
+        int totalPage = (omahaDiagnosisResultList.size() / 10000) + 1;
         int pageSize = 10000;
         Workbook workbookBig = ExcelExportUtil.exportBigExcel(
                 new ExportParams("诊断","临床表现", ExcelType.XSSF),
@@ -76,15 +67,15 @@ public class OmahaApp {
                         }
                         // fromIndex开始索引，toIndex结束索引
                         int fromIndex = (page - 1) * pageSize;
-                        int toIndex = page != totalPage ? fromIndex + pageSize :diagnosisResultList.size();
+                        int toIndex = page != totalPage ? fromIndex + pageSize : omahaDiagnosisResultList.size();
                         List<Object> list = new ArrayList<>();
-                        list.addAll(diagnosisResultList.subList(fromIndex, toIndex));
+                        list.addAll(omahaDiagnosisResultList.subList(fromIndex, toIndex));
                         return list;
                     }
                 },
                 totalPage
                 );
-        FileOutputStream fosBig = new FileOutputStream("E:\\医疗\\知识导入\\知识导入任务\\omaha-export-big.xlsx");
+        FileOutputStream fosBig = new FileOutputStream("E:\\医疗\\知识导入\\知识导入任务\\omaha-export.xlsx");
         workbookBig.write(fosBig);
         fosBig.close();
     }
@@ -100,9 +91,9 @@ public class OmahaApp {
         for(serialNo =0;serialNo < maxSize; serialNo++){
             DiagnosisResultDto diagnosisResultDto = new DiagnosisResultDto();
             if(serialNo==0){  //首记录设置序号1
-                serialNoExcel = serialNoExcel+1;
+                omahaSerialNoExcel = omahaSerialNoExcel +1;
                 diagnosisResultDto.setTermName(omahaDto.getDiease());
-                diagnosisResultDto.setSerialNo(String.valueOf(serialNoExcel));
+                diagnosisResultDto.setSerialNo(String.valueOf(omahaSerialNoExcel));
             }
             if(serialNo<identifyListSize){ //诊断
                 diagnosisResultDto.setIdentifyDisease(omahaDto.getIdentifyList().get(serialNo).getValue());
@@ -124,7 +115,7 @@ public class OmahaApp {
                 diagnosisResultDto.setPositiveExamineAName(omahaDto.getPositiveExamineAList().get(serialNo).getValue());
                 diagnosisResultDto.setPositiveExamineASource(omahaDto.getPositiveExamineAList().get(serialNo).getSource());
             }
-            diagnosisResultList.add(diagnosisResultDto);
+            omahaDiagnosisResultList.add(diagnosisResultDto);
         }
 
     }
@@ -132,7 +123,7 @@ public class OmahaApp {
     private static void omahaProcess(List<OmahaEntity> omahaEntitySubList) {
         for (OmahaEntity omahaEntity: omahaEntitySubList) {
             String disease = omahaEntity.getEntity();
-            OmahaDto omahaDto = diagnosisMap.get(disease);
+            OmahaDto omahaDto = omahaDtoHashMap.get(disease);
             if(omahaDto == null){
                 omahaDto = new OmahaDto();
                 omahaDto.setDiease(disease);
@@ -159,7 +150,7 @@ public class OmahaApp {
                 default:
                     System.out.println("default");
             }
-            diagnosisMap.put(disease,omahaDto);
+            omahaDtoHashMap.put(disease,omahaDto);
         }
     }
 
@@ -175,9 +166,9 @@ public class OmahaApp {
     }
 
     private static void printDiagnosisMap() {
-        System.out.println(diagnosisMap.size());
+        System.out.println(omahaDtoHashMap.size());
         int i=0;
-        for(Map.Entry<String,OmahaDto> entry :diagnosisMap.entrySet()){
+        for(Map.Entry<String,OmahaDto> entry : omahaDtoHashMap.entrySet()){
             System.out.println(entry.getKey()+"="+entry.getValue());
             i++;
             if(i>=3){
@@ -204,4 +195,15 @@ public class OmahaApp {
         System.out.println(omahaEntitySubList.size());
         return omahaEntitySubList;
     }
+
+    private static List<OmahaEntity> readLocalFileDirectSub() {
+        ImportParams params = new ImportParams();
+        params.setTitleRows(0);
+        params.setHeadRows(1);
+        List<OmahaEntity> omahaEntitySubList = ExcelImportUtil.importExcel(new File("E:\\医疗\\知识导入\\知识导入任务\\OMAHA\\汇知医学知识图谱_疾病_20220820-sub.xlsx"),OmahaEntity.class, params);
+        System.out.println(omahaEntitySubList.size());
+        return omahaEntitySubList;
+    }
+
+
 }

@@ -11,10 +11,8 @@ import com.knowledge.dto.PositiveSymptomReusltDto;
 import com.knowledge.entity.*;
 import com.knowledge.util.FileUtil;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.example.UserEntity;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class App {
+public class BmjApp {
 
     public static HashMap<String, DiagnosisDto> diagnosisMap = new HashMap<String,DiagnosisDto>();
     public static List<DiagnosisResultDto> diagnosisResultList = new ArrayList<DiagnosisResultDto>();
@@ -64,6 +62,10 @@ public class App {
         }
 
         //生成excel文档
+        exportLocalExcel();
+    }
+
+    private static void exportLocalExcel() throws IOException {
         Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("诊断","临床表现", ExcelType.XSSF),
                 DiagnosisResultDto.class, diagnosisResultList);
         FileOutputStream fos = new FileOutputStream("E:\\医疗\\知识导入\\知识导入任务\\diagnosis-export.xlsx");
@@ -172,7 +174,7 @@ public class App {
         }
     }
 
-    public static void fileList(String filepath,String fileType) {
+    private static void fileList(String filepath,String fileType) {
         File file= new File(filepath);
         File[] listFiles = file.listFiles();
         for (File file2 : listFiles) {

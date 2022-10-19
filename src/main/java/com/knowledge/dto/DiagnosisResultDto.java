@@ -247,4 +247,11 @@ public class DiagnosisResultDto {
     private String createTime;
     @Excel(name = "审核人员")
     private String reviewer;
+
+    /*@Excel(name = "临时文档类型")
+    private String tempFileType;
+    @Excel(name = "临时术语名称")
+    private String tempTermName;
+    @Excel(name = "临时序号")
+    private int tempSerialNo;*/
 }

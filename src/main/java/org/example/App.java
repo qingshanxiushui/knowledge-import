@@ -24,23 +24,13 @@ public class App
 {
 
     public static void main( String[] args ) throws IOException {
-        List<String> lists = new ArrayList<String>();
-        lists.add("a");
-        lists.add("b");
-        lists.add("c");
-        lists.add("d");
-        lists.add("e");
-        System.out.println(lists.subList(0,2).toString());
-        System.out.println(lists.subList(2,lists.size()).toString());
-        System.out.println(lists.size());
-        System.out.println(lists.get(lists.size()-1).toString());
         //System.out.println("Wiskott-Aldrich综合征".toLowerCase()+";"+"Addison病".toLowerCase());
         //System.out.println(Math.max(8,Math.max(7,6)));
         //importLocalExcel();
         //exportLocalExcel();
         //diagnosisMapProcess();
         //mapOperation();
-        //fileList();
+        fileList();
         //fileToObject();
     }
 
@@ -106,6 +96,8 @@ public class App
         resultMidMap.put("3","c");
         System.out.println(resultMidMap);
         resultMidMap.remove("1");
+        System.out.println(resultMidMap.get(1));
+        System.out.println(resultMidMap.get(1)==null);
         System.out.println(resultMidMap);
         resultMidMap.put("2","bb");
         System.out.println(resultMidMap);
@@ -115,9 +107,10 @@ public class App
     }
 
     private static void fileList() {
-        FileUtil.fileList("E:\\医疗\\知识导入\\知识导入任务\\BMJ\\BMJ-量表\\");
-        System.out.println(FileUtil.fileList.size());
-        System.out.println(FileUtil.fileList);
+        ArrayList<File> fileList = new ArrayList<File>();
+        FileUtil.fileList("E:\\医疗\\知识导入\\知识导入任务\\BMJ\\BMJ-量表\\",fileList);
+        System.out.println(fileList.size());
+        System.out.println(fileList);
     }
 
     public static void fileToObject(){
