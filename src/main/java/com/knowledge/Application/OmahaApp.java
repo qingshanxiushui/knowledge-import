@@ -5,6 +5,7 @@ import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
+import cn.afterturn.easypoi.handler.inter.IExcelExportServer;
 import com.knowledge.dto.DiagnosisDto;
 import com.knowledge.dto.DiagnosisResultDto;
 import com.knowledge.dto.OmahaDto;
@@ -54,12 +55,38 @@ public class OmahaApp {
         workbookA.write(fosA);
         fosA.close();*/
 
+        int totalPage = (diagnosisResultList.size() / 10000) + 1;
+        int pageSize = 10000;
         Workbook workbookBig = ExcelExportUtil.exportBigExcel(
                 new ExportParams("诊断","临床表现", ExcelType.XSSF),
                 DiagnosisResultDto.class,
+                new IExcelExportServer(){
 
+                    /**
+                     * queryParams 就是下面的totalPage，限制条件
+                     * page 是页数，他是在分页进行文件转换，page每次+1
+                     */
+                    @Override
+                    public List<Object> selectListForExcelExport(Object queryParams, int page) {
+                        //很重要！！这里面整个方法体，其实就是将所有的数据aList分批返回处理
+                        //分批的方式很多，我直接用了subList。然后 每批不能太大。我试了30000一批，
+                        //内存溢出，貌似 最大每批10000
+                        if (page > totalPage) {
+                            return null;
+                        }
+                        // fromIndex开始索引，toIndex结束索引
+                        int fromIndex = (page - 1) * pageSize;
+                        int toIndex = page != totalPage ? fromIndex + pageSize :diagnosisResultList.size();
+                        List<Object> list = new ArrayList<>();
+                        list.addAll(diagnosisResultList.subList(fromIndex, toIndex));
+                        return list;
+                    }
+                },
+                totalPage
                 );
-
+        FileOutputStream fosBig = new FileOutputStream("E:\\医疗\\知识导入\\知识导入任务\\omaha-export-big.xlsx");
+        workbookBig.write(fosBig);
+        fosBig.close();
     }
 
     private static void omahaFlatMap(OmahaDto omahaDto) {
