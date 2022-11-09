@@ -100,11 +100,13 @@ public class BmjApp {
             for(DifferentialDiagnosisSubEntity differentialDiagnosisSubEntity:diagnosis.getDifferentialDiagnosis()){
                 differentialDiagnosisName = differentialDiagnosisSubEntity.get疾病();
                 if(differentialDiagnosisSubEntity.get症状()!=null && !differentialDiagnosisSubEntity.get症状().isEmpty()){
-                    for(String performance:differentialDiagnosisSubEntity.get症状()){
+                    DifferentialDiagnosisResultDto differentialDiagnosisResult = new DifferentialDiagnosisResultDto(differentialDiagnosisName,differentialDiagnosisSubEntity.get症状().toString());
+                    differentialDiagnosisReusltList.add(differentialDiagnosisResult);
+                    /*for(String performance:differentialDiagnosisSubEntity.get症状()){
                         differentialDiagnosisPerformance = performance;
                         DifferentialDiagnosisResultDto differentialDiagnosisResult = new DifferentialDiagnosisResultDto(differentialDiagnosisName,differentialDiagnosisPerformance);
                         differentialDiagnosisReusltList.add(differentialDiagnosisResult);
-                    }
+                    }*/
                 }
             }
         }
