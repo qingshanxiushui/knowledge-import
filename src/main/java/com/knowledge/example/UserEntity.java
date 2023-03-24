@@ -1,4 +1,4 @@
-package org.example;
+package com.knowledge.example;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import lombok.AllArgsConstructor;

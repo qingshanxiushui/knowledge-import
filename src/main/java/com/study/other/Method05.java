@@ -1,4 +1,4 @@
-package org.example;
+package com.study.other;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;

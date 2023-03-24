@@ -321,19 +321,17 @@ public class MergeApp {
 
         //打平鉴别诊断
         String differentialDiagnosisName;
-        String differentialDiagnosisPerformance;
         List<DifferentialDiagnosisResultDto> differentialDiagnosisReusltList= new ArrayList<DifferentialDiagnosisResultDto>();
         if(diagnosis.getDifferentialDiagnosis() !=null && !diagnosis.getDifferentialDiagnosis().isEmpty()){
             for(DifferentialDiagnosisSubEntity differentialDiagnosisSubEntity:diagnosis.getDifferentialDiagnosis()){
                 differentialDiagnosisName = differentialDiagnosisSubEntity.get疾病();
                 if(differentialDiagnosisSubEntity.get症状()!=null && !differentialDiagnosisSubEntity.get症状().isEmpty()){
-                    DifferentialDiagnosisResultDto differentialDiagnosisResult = new DifferentialDiagnosisResultDto(differentialDiagnosisName,differentialDiagnosisSubEntity.get症状().toString());
+                    StringBuilder differentialDiagnosisPerformance = new StringBuilder();
+                    for(String performance:differentialDiagnosisSubEntity.get症状()){
+                        differentialDiagnosisPerformance =  differentialDiagnosisPerformance.append(performance);
+                    }
+                    DifferentialDiagnosisResultDto differentialDiagnosisResult = new DifferentialDiagnosisResultDto(differentialDiagnosisName,differentialDiagnosisPerformance.toString());
                     differentialDiagnosisReusltList.add(differentialDiagnosisResult);
-                    /*for(String performance:differentialDiagnosisSubEntity.get症状()){
-                        differentialDiagnosisPerformance = performance;
-                        DifferentialDiagnosisResultDto differentialDiagnosisResult = new DifferentialDiagnosisResultDto(differentialDiagnosisName,differentialDiagnosisPerformance);
-                        differentialDiagnosisReusltList.add(differentialDiagnosisResult);
-                    }*/
                 }
             }
         }
