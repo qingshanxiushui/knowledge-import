@@ -5,10 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,8 +21,27 @@ public class regexpApp {
         //System.out.println(RegexpToPhysical("体温:36.2 ℃     脉搏：78 次/分     呼吸 "));
         //System.out.println(RegexpToPhysical("T:36.2 ℃     P：78 次/分     R   20 次/分     BP 110/65  mmHg").toString());
         //System.out.println(RegexpCheckSpecial( "  "));
-        System.out.println(RegexpGetDate("2021年9月1号开始")); //1923年12月31日,2021-2-1开始,23年12月31日开始
+        //System.out.println(RegexpGetDate("2021-2")); //1923年12月31日,2021-2-1开始,23年12月31日开始,2021年9月1号,2021年9月开始
 
+        String pattern = "\\s*(,|，)\\s*";
+
+        // "(?<=@\\{).*?(?=})"
+        // "\\$\\{.*?\\}"   // name =='${operationName}
+        //String pattern = "\\$\\{.*?\\}";
+
+        String s = "";
+        Matcher matcher = Pattern.compile(pattern).matcher(s);
+        List<String> sList = new ArrayList<>();
+        int start =0;
+        while (matcher.find()) {
+            System.out.println(matcher.start());
+            System.out.println(matcher.end());
+            System.out.println(matcher.group().toString());
+            sList.add(s.substring(start,matcher.start()));
+            start = matcher.end();
+        }
+        sList.add(s.substring(start,s.length()));
+        System.out.println(sList.toString());
 
     }
 
@@ -108,11 +124,10 @@ public class regexpApp {
     }
     private static String RegexpGetDate(String msg) throws ParseException {
         String dateStr = null;
-        String pattern = "((\\d{2})年(\\d{1,2})月(\\d{1,2})(日|号))|\\d{4}-\\d{1,2}-\\d{1,2}";
+        String pattern = "((\\d{2})年(\\d{1,2})月(\\d{1,2})(日|号))|((\\d{2})年(\\d{1,2})月)|(\\d{4}-\\d{1,2})|\\d{4}-\\d{1,2}-\\d{1,2}";
         Matcher matcher = Pattern.compile(pattern).matcher(msg);
         while (matcher.find()) {
             System.out.println("groupCount:"+matcher.groupCount());
-            System.out.println("matcherGroup:"+matcher.group().toString());
             if(matcher.group(1)!=null){ //**年**月**日格式
                 int year = Integer.valueOf(matcher.group(2).toString());
                 String yearString;
@@ -122,6 +137,17 @@ public class regexpApp {
                     yearString = "19"+year;
                 }
                 dateStr = yearString+"-"+matcher.group(3).toString()+"-"+matcher.group(4).toString();
+            }else if(matcher.group(6)!=null){
+                int year = Integer.valueOf(matcher.group(7).toString());
+                String yearString;
+                if(year<50){
+                    yearString = "20"+year;
+                }else{
+                    yearString = "19"+year;
+                }
+                dateStr = yearString+"-"+matcher.group(8).toString()+"-1";
+            }else if(matcher.group(9)!=null){
+                dateStr = matcher.group().toString()+"-1";
             }else{ //yyyy-mm-dd 格式
                 dateStr = matcher.group().toString();
             }

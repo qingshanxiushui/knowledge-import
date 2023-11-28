@@ -3,7 +3,8 @@ package com.study.collect;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.*;
-
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class OtherApp {
@@ -11,24 +12,41 @@ public class OtherApp {
         //stackSample();
         //indexSet();
         //sortCollections();
-        /*Set<String> s = new HashSet<>();
-        s.add(null);
-        System.out.println(s.toString()+":"+s.size());
-        s.add("a");
-        System.out.println(s.toString()+":"+s.size());
+        //containsAll();
+        //compare();
+        multiParam("concept.concept_type", "concept.preferred_term.name");
 
+    }
 
-        List<JSONObject> structuredText = null;
-        System.out.println(structuredText==null);
-        structuredText = new ArrayList<>();
-        System.out.println(structuredText==null);
+    private static void multiParam(String... paramNames){
+        List<String> params = Stream.of(paramNames).collect(Collectors.toList());
+        System.out.println(params.toString());
+    }
 
-        Map<String,String> mapOne= new HashMap<>();
-        mapOne.put("mapOne","a");
-        mapOne.put("mapT",null);
+    private static void compare() {
+        Map<Integer,List<String>> map = new HashMap<>();
+        List<String> a = new ArrayList<>();
+        a.add("b");
+        a.add("a");
+        a.add("c");
+        map.put(1,a);
+        List<String> b = new ArrayList<>();
+        b.add("c");
+        b.add("a");
+        b.add("b");
+        map.put(2,b);
+        for(int key : map.keySet()){
+            Collections.sort(map.get(key),new Comparator<String>() {
+                @Override
+                public int compare(String p1, String p2) {
+                    return p2.compareTo(p1);
+                }
+            });
+        }
+        System.out.println(map.toString());
+    }
 
-        System.out.println(mapOne.toString());*/
-
+    private static void containsAll() {
         List<String> list1 = new ArrayList();
         list1.add("222");
         list1.add("111");
@@ -40,7 +58,6 @@ public class OtherApp {
         list2.sort(Comparator.comparing(String::hashCode));
         System.out.println(list1.equals(list2));
         System.out.println(list1.containsAll(list2));
-
     }
 
     private static void sortCollections() {
